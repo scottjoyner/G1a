@@ -1,0 +1,22 @@
+# Python caches
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual envs
+.venv*/
+venv/
+ENV/
+
+# Local data/models
+*.pt
+*.bin
+*.pth
+*.onnx
+models/
+outputs/
+
+# VCS
+.git
+.gitignore

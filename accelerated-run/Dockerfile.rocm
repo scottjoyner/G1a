@@ -1,0 +1,30 @@
+# ROCm/PyTorch base (validated tags exist for ROCm 6.4.2 on Ubuntu 24.04)
+# Examples include:
+#   rocm/pytorch:rocm6.4.2_ubuntu24.04_py3.12_pytorch_release_2.6.0
+#   rocm/pytorch:rocm6.4.2_ubuntu24.04_py3.12_pytorch_release_2.5.1
+ARG BASE_IMAGE=rocm/pytorch:rocm6.4.2_ubuntu24.04_py3.12_pytorch_release_2.6.0
+FROM ${BASE_IMAGE}
+
+# Create a non-root user that matches the common WSL uid/gid
+ARG USER_ID=1000
+ARG GROUP_ID=1000
+RUN groupadd -g ${GROUP_ID} appuser  && useradd -m -u ${USER_ID} -g ${GROUP_ID} -s /bin/bash appuser
+
+# Basic tools
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+      ca-certificates curl git nano vim jq python3-venv \
+  && rm -rf /var/lib/apt/lists/*
+
+# Python deps (lightweight; heavy torch is in the base image)
+WORKDIR /workspace
+COPY requirements_rocm.txt /tmp/requirements_rocm.txt
+RUN pip install --no-cache-dir -r /tmp/requirements_rocm.txt
+
+ENV HF_HOME=/opt/hf \
+    TRANSFORMERS_CACHE=/opt/hf
+
+# Create cache dir and set permissions for mounted volume
+RUN mkdir -p /opt/hf && chown -R appuser:appuser /opt/hf
+
+USER appuser
+WORKDIR /workspace

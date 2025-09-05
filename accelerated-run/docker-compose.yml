@@ -1,0 +1,30 @@
+version: "3.9"
+services:
+  trainer:
+    build:
+      context: .
+      dockerfile: Dockerfile.rocm
+      args:
+        - USER_ID=1000
+        - GROUP_ID=1000
+    image: accelerated-run:rocm
+    container_name: accelerated-trainer
+    # Map the WSL GPU device (WSL uses /dev/dxg)
+    devices:
+      - "/dev/dxg:/dev/dxg"
+    environment:
+      - BACKEND=hip
+      - HF_HOME=/opt/hf
+      - TRANSFORMERS_CACHE=/opt/hf
+    volumes:
+      - ./:/workspace
+      - hf_cache:/opt/hf
+    working_dir: /workspace
+    ipc: host
+    stdin_open: true
+    tty: true
+    command: ["python", "/workspace/train.py"]
+    profiles: ["rocm"]
+
+volumes:
+  hf_cache:
